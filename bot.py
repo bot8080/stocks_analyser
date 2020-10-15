@@ -1,24 +1,59 @@
+# import _thread
+# import time
+
+# # Define a function for the thread
+# def print_time( threadName, delay):
+#    count = 0
+#    while count < 4:
+#       time.sleep(delay)
+#       count += 1
+#       print ("%s: %s" % ( threadName, time.ctime(time.time()) ))
+
+# # Create two threads as follows
+# try:
+#    _thread.start_new_thread( print_time, ("Thread-1", 2, ) )
+#    _thread.start_new_thread( print_time, ("Thread-2", 2, ) )
+#    _thread.start_new_thread( print_time, ("Thread-3", 2, ) )
+#    _thread.start_new_thread( print_time, ("Thread-4", 2, ) )
+#    _thread.start_new_thread( print_time, ("--------", 2, ) )
+#    _thread.start_new_thread( print_time, ("--------", 2, ) )
+
+
+# except Exception as ss:
+#    print (ss)
+
+# print("DONE")
+
+# while 1:
+# 	pass
+
 import telebot
 import time
-import stocks
+import sclass
 import os
 import requests
-from telegram.error import (TelegramError, Unauthorized, BadRequest, TimedOut, ChatMigrated, NetworkError)
+from sclass import Stockbot
+# from telegram.error import (TelegramError, Unauthorized, BadRequest, TimedOut, ChatMigrated, NetworkError)
 
-bot_token = "1397494341:AAHlbj8WVMUBr9MxD8eGhBGq2OKC1VE1qGY"
-bot = telebot.TeleBot(token=bot_token)
+try:
+	bot_token = "1397494341:AAHlbj8WVMUBr9MxD8eGhBGq2OKC1VE1qGY"
+
+	bot = telebot.TeleBot(token=bot_token)
+
+except Exception as pp:
+	print(pp)
+
 print("BOT STARTED")
 
 def get_stock_name(message,msg):
-  for text in msg:
-    if text.startswith("@"):
-      bot.reply_to(message, "Stock name {}".format(text[1:]))
-      return text[1:]
-
+  # for text in msg:
+    if msg.startswith("@"):
+      bot.reply_to(message, "Stock name {}".format(msg))
+      return msg[1:]
 
 def get_interval(message,msg):
   for text in msg:
-    if text[0].isdigit():
+    if text[0].isdigit() or text:
       bot.reply_to(message, "Interval {}".format(text))
       return text
 
@@ -30,7 +65,7 @@ def send_welcome(message):
 
 @bot.message_handler(commands=['restart'])
 def restart(message):
-    os.system('python "C:/Users/abhik/Desktop/stocks/bot/stocks.py"')
+    os.system('python "C:/Users/angel/Desktop/s.py"')
     bot.reply_to(message, "Server restarted.")
 
 
@@ -41,7 +76,8 @@ def search(message):
       bot.reply_to(message, res.json()['ResultSet']['Result'][0]['symbol'])
     except Exception as ee:
       print(ee)
-      bot.reply_to(message, "Enter Company name after /search ")
+      bot.reply_to(message, "Enter valid company name after /search ")
+      pass
 
 
 @bot.message_handler(commands=['help'])
@@ -53,23 +89,36 @@ def send_welcome(message):
 def at_answer(message):
   ohlc = []
   ohlc.clear()
-  stock = message.text.split(" ")
-  stock_name = get_stock_name(message,stock)
-  ohlc = stocks.main(stock_name, stock[1])
 
-  if str(type(ohlc)) == "<class 'str'>":
-    bot.reply_to(message, ohlc)
+  input_value = message.text.split(" ")
+  # Eg. input_value = ['stock name', 'interval']
+  
+  if len(input_value)==2:
+    try:
+      stock_name = get_stock_name(message,input_value[0])  
+      obj = Stockbot(stock_name,input_value[1])
+      ohlc = obj.main()
+	  	
+      # ohlc = s.Stockbot(stock_name, input_value[1])
+    except Exception as e:
+      print(e)
+      pass
 
-  # ohlc.append(min_OPEN, max_HIGH, min_LOW, close, candles, sum_candles)
-  try:
-    bot.reply_to(message, "OPEN      -> {:.2f}\nHIGH      -> {:.2f}\nLOW       -> {:.2f}\nCLOSE     -> {:.2f}\nTOTAL CANDLES  -> {}".format(ohlc[0], ohlc[1], ohlc[2], ohlc[3], ohlc[4]))
-    bot.reply_to(message, "\nCLOSED MEAN VALUE -> {:.2f}".format(ohlc[5]/ohlc[4]))
-    bot.reply_to(message, "------------{}".format(ohlc[6]))
-    bot.reply_to(message, )
+    if str(type(ohlc)) == "<class 'str'>":
+      bot.reply_to(message, ohlc)
 
-  except Exception as ww:
-    print(ww)
+    # ohlc.append(min_OPEN, max_HIGH, min_LOW, close, candles, sum_candles)
+    try:
+      bot.reply_to(message, "OPEN      -> {:.2f}\nHIGH      -> {:.2f}\nLOW       -> {:.2f}\nCLOSE     -> {:.2f}\nTOTAL CANDLES  -> {}".format(ohlc[0], ohlc[1], ohlc[2], ohlc[3], ohlc[4]))
+      bot.reply_to(message, "\nCLOSED MEAN VALUE -> {:.2f}".format(ohlc[5]/ohlc[4]))
+      bot.reply_to(message, "------------{}".format(ohlc[6]))
+      bot.reply_to(message, "-------------------------------------")
 
+    except Exception as ww:
+      print(ww)
+      pass
+  else:
+  	bot.reply_to(message, "Enter interval (Eg.  SBIN.NS 1d)")
 
 while True:
   try:
