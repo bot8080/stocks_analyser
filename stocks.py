@@ -9,8 +9,8 @@ class Stockbot:
   def __init__(self, stock_name, interval):
     self.ohlc = []
     self.error = 0
-    self.startdate = ""
-    self.enddate = ""
+    self.date = ""
+    self.month = ""
     self.setup = ""
     self.interval = interval
     self.stock_name = stock_name
@@ -24,9 +24,14 @@ class Stockbot:
     # self.date_duration = input("Enter Time duration (1d, 5d, 1mo, 3mo, 6mo, 1y, 2y , 3y): ")
 
   def date_range_setup(self):
-      self.startdate = int(time.mktime(datetime.datetime.strptime(self.startdate,"%d/%m/%Y").timetuple()))
-      self.enddate = int(time.mktime(datetime.datetime.strptime(self.enddate,"%d/%m/%Y").timetuple())) 
-      self.res = requests.get(self.url+str(self.stock_name)+'?&interval='+str(self.interval)+'&includePrePost=true&events=div%2Csplit&period1='+str(self.startdate)+'&period2='+str(self.enddate))
+      # 20/12/2020
+      startdate = self.date+"/"+self.month+"/"+"2020"
+      enddate = str(int(self.date)+1)+"/"+self.month+"/"+"2020"
+
+      startdate = int(time.mktime(datetime.datetime.strptime(startdate,"%d/%m/%Y").timetuple()))
+      enddate = int(time.mktime(datetime.datetime.strptime(enddate,"%d/%m/%Y").timetuple())) 
+
+      self.res = requests.get(self.url+str(self.stock_name)+'?&interval='+str(self.interval)+'&includePrePost=true&events=div%2Csplit&period1='+str(startdate)+'&period2='+str(enddate))
 
   def default_setup(self):
       self.date_duration = "1d"
@@ -62,10 +67,12 @@ class Stockbot:
       self.table.columns = ['OPEN', 'HIGH','LOW','CLOSE','VOLUME']    #Renaming columns in pandas
 
 
-  def main(self,setupp,sdate=0,edate=0):
+  def main(self,setupp,d=0,m=0):
     self.setup = setupp
-    self.startdate = sdate
-    self.enddate = edate
+    # self.startdate = sdate
+    # self.enddate = edate
+    self.date = d
+    self.month = m
 
     if self.setup == "default":
       self.default_setup()
@@ -78,6 +85,7 @@ class Stockbot:
       return self.error
     else:
       print(self.table)
+      print("---------------------------------------------------------------------\n\n\n")
       min_OPEN = -99999
       for open_item in self.table['OPEN']:
         min_OPEN = open_item
