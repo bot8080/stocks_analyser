@@ -1,0 +1,9 @@
+python-telegram-bot-calendar
+arrow
+numpy
+requests
+python-telegram-bot
+pyTelegramBotAPI
+telebot
+telegram
+pandas

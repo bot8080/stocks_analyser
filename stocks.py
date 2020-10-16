@@ -7,47 +7,47 @@ import time
 
 class Stockbot:
   def __init__(self, stock_name, interval):
-    self.startdate = ""
-    self.enddate = ""
     self.ohlc = []
     self.error = 0
-    self.time_duration = "1d"
-
-   
-
-    self.stock_name = stock_name
+    self.startdate = ""
+    self.enddate = ""
+    self.setup = ""
     self.interval = interval
+    self.stock_name = stock_name
+    self.url = 'https://query1.finance.yahoo.com/v8/finance/chart/'
 
-    print(self.stock_name," ", self.interval)
+    print(self.stock_name,"", self.interval)
+
 
     # stock_name = input("Enter Stock name: ")
 
-    # self.time_duration = input("Enter Time duration (1d, 5d, 1mo, 3mo, 6mo, 1y, 2y , 3y): ")
+    # self.date_duration = input("Enter Time duration (1d, 5d, 1mo, 3mo, 6mo, 1y, 2y , 3y): ")
+
+  def date_range_setup(self):
+      self.startdate = int(time.mktime(datetime.datetime.strptime(self.startdate,"%d/%m/%Y").timetuple()))
+      self.enddate = int(time.mktime(datetime.datetime.strptime(self.enddate,"%d/%m/%Y").timetuple())) 
+      self.res = requests.get(self.url+str(self.stock_name)+'?&interval='+str(self.interval)+'&includePrePost=true&events=div%2Csplit&period1='+str(self.startdate)+'&period2='+str(self.enddate))
+
+  def default_setup(self):
+      self.date_duration = "1d"
+      self.res = requests.get(self.url+str(self.stock_name)+'?&interval='+str(self.interval)+'&includePrePost=true&events=div%2Csplit&range='+str(self.date_duration))
 
 
   def request_data(self):
       if self.interval =="":
-          self.interval = "1m"
-
-      # startdate = int(time.mktime(datetime.datetime.strptime(startdate,"%d/%m/%Y").timetuple()))
-      # enddate = int(time.mktime(datetime.datetime.strptime(enddate,"%d/%m/%Y").timetuple()))
+        self.interval = "1m"
 
       # pd.options.display.max_rows = 2000
 
-      # res = requests.get('https://query1.finance.yahoo.com/v8/finance/chart/{stock_name}?range={data_range}&interval={interval}&period1={start_date}&period2={end_date}&includePrePost=true&events=div%2Csplit'.format(**locals()))
-      
-      # res = requests.get('https://query1.finance.yahoo.com/v8/finance/chart/'+str(stock_name)+'?&interval='+str(interval)+'&includePrePost=true&events=div%2Csplit&period1='+str(startdate)+'&period2='+str(enddate)')
-      res = requests.get('https://query1.finance.yahoo.com/v8/finance/chart/'+str(self.stock_name)+'?&interval='+str(self.interval)+'&includePrePost=true&events=div%2Csplit&range='+str(self.time_duration))
-      
-      print(res.url)
-      data = res.json()
+      print(self.res.url)
+      data = self.res.json()
 
       try:
-          body = data['chart']['result'][0]    
+        body = data['chart']['result'][0]    
       except:
-          # print(data['chart']['error']['code'])
-          self.error = data['chart']['error']['description']
-          return
+        # print(data['chart']['error']['code'])
+        self.error = data['chart']['error']['description']
+        return
 
       try:
         dt = datetime.datetime
@@ -62,12 +62,21 @@ class Stockbot:
       self.table.columns = ['OPEN', 'HIGH','LOW','CLOSE','VOLUME']    #Renaming columns in pandas
 
 
-  def main(self):
+  def main(self,setupp,sdate=0,edate=0):
+    self.setup = setupp
+    self.startdate = sdate
+    self.enddate = edate
+
+    if self.setup == "default":
+      self.default_setup()
+    if self.setup == "date":
+      self.date_range_setup()
+
     self.request_data()
+
     if str(type(self.error)) == "<class 'str'>":
       return self.error
     else:
-      print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
       print(self.table)
       min_OPEN = -99999
       for open_item in self.table['OPEN']:
@@ -99,3 +108,5 @@ class Stockbot:
   # OPEN = HIGH   (INDICATE STCK NAME SALE) 
   # OPEN = LOW    (INDICATE STCK NAME BUY) pehli 5m ki candle ke upar
   # INTERVAL 1m
+# obj = Stockbot("sbin.ns","1d")
+# obj.main()

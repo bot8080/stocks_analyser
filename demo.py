@@ -49,7 +49,7 @@ def start(update: Update, context: CallbackContext):
     # defining the keyboard layout
     kbd_layout = [['Option 1', 'Option 2'], ['Option 3', 'Option 4'],["Option 5"]]
     kbd = ReplyKeyboardMarkup(kbd_layout)
-
+    
     # sending the reply so as to activate the keyboard
     update.message.reply_text(text="Select Options", reply_markup=kbd)
 
