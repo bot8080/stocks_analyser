@@ -1,4 +1,3 @@
-python-telegram-bot-calendar
 arrow
 numpy
 requests

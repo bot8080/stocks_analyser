@@ -33,7 +33,7 @@ import stocks
 import os
 import requests
 from stocks import Stockbot
-from telegram_bot_calendar import DetailedTelegramCalendar, LSTEP
+# from telegram_bot_calendar import DetailedTelegramCalendar, LSTEP
 
 # from telegram.error import (TelegramError, Unauthorized, BadRequest, TimedOut, ChatMigrated, NetworkError)
 
@@ -62,13 +62,13 @@ def get_interval(message,msg):
       return text
 
 
-@bot.callback_query_handler(func=DetailedTelegramCalendar.func())
-def cal(messag):
-    result, key, step = DetailedTelegramCalendar().process(messag.data)
-    if not result and key:
-        bot.edit_message_text(f"Select {LSTEP[step]}",messag.message.chat.id,messag.message.message_id,reply_markup=key)
-    elif result:
-        bot.edit_message_text(f"You selected {result}",messag.message.chat.id,messag.message.message_id)
+# @bot.callback_query_handler(func=DetailedTelegramCalendar.func())
+# def cal(messag):
+#     result, key, step = DetailedTelegramCalendar().process(messag.data)
+#     if not result and key:
+#         bot.edit_message_text(f"Select {LSTEP[step]}",messag.message.chat.id,messag.message.message_id,reply_markup=key)
+#     elif result:
+#         bot.edit_message_text(f"You selected {result}",messag.message.chat.id,messag.message.message_id)
 
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
