@@ -63,22 +63,15 @@ def get_interval(message,msg):
 
 @bot.callback_query_handler(func=DetailedTelegramCalendar.func())
 def cal(messag):
-    result, key, step = DetailedTelegramCalendar().process(c.data)
+    result, key, step = DetailedTelegramCalendar().process(messag.data)
     if not result and key:
-        bot.edit_message_text(f"Select {LSTEP[step]}",
-                              messag.message.chat.id,
-                              messag.message.message_id,
-                              reply_markup=key)
+        bot.edit_message_text(f"Select {LSTEP[step]}",messag.message.chat.id,messag.message.message_id,reply_markup=key)
     elif result:
-        bot.edit_message_text(f"You selected {result}",
-                              messag.message.chat.id,
-                              messag.message.message_id)
+        bot.edit_message_text(f"You selected {result}",messag.message.chat.id,messag.message.message_id)
 
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
   bot.reply_to(message, "Welcome to patialabot 😇 \nA personal stock 🤖 BOT")
-  calendar, step = DetailedTelegramCalendar().build()
-  bot.send_message(message.chat.id,f"Select {LSTEP[step]}",reply_markup=calendar)
 
 
 @bot.message_handler(commands=['restart'])
@@ -117,6 +110,7 @@ def at_answer(message):
   ohlc = []
   ohlc.clear()
   global setup_name
+  flag = False
 
   input_value = message.text.split(" ")
   # Eg. input_value = ['stock name', 'interval']
@@ -130,29 +124,38 @@ def at_answer(message):
 
       if setup_name == "date":
         bot.reply_to(message, "Date setup")
-        ohlc = obj.main("date","13/10/2020","15/10/2020")
-      if setup_name == "default":
-        bot.reply_to(message, "Default setup")
-        ohlc = obj.main("default")
-        pass
+
+        calendar, step = DetailedTelegramCalendar().build()
+        bot.send_message(message.chat.id,f"Select {LSTEP[step]}",reply_markup=calendar)
+
+        while !flag:
+          # ohlc = obj.main("date","13/10/2020","15/10/2020")
+          flag = True
+          ohlc = obj.main("date",sdate,edate)
+
+          if setup_name == "default":
+            bot.reply_to(message, "Default setup")
+            ohlc = obj.main("default")
+            pass
 	  	
     except Exception as e:
       print(e)
       pass
 
-    if str(type(ohlc)) == "<class 'str'>":
-      bot.reply_to(message, ohlc)
+    if flag == "True":
+      if str(type(ohlc)) == "<class 'str'>":
+        bot.reply_to(message, ohlc)
 
-    # ohlc.append(min_OPEN, max_HIGH, min_LOW, close, candles, sum_candles)
-    try:
-      bot.reply_to(message, "OPEN      -> {:.2f}\nHIGH      -> {:.2f}\nLOW       -> {:.2f}\nCLOSE     -> {:.2f}\nTOTAL CANDLES  -> {}".format(ohlc[0], ohlc[1], ohlc[2], ohlc[3], ohlc[4]))
-      bot.reply_to(message, "\nCLOSED MEAN VALUE -> {:.2f}".format(ohlc[5]/ohlc[4]))
-      bot.reply_to(message, "------------{}".format(ohlc[6]))
-      bot.reply_to(message, "-------------------------------------")
+      # ohlc.append(min_OPEN, max_HIGH, min_LOW, close, candles, sum_candles)
+      try:
+        bot.reply_to(message, "OPEN      -> {:.2f}\nHIGH      -> {:.2f}\nLOW       -> {:.2f}\nCLOSE     -> {:.2f}\nTOTAL CANDLES  -> {}".format(ohlc[0], ohlc[1], ohlc[2], ohlc[3], ohlc[4]))
+        bot.reply_to(message, "\nCLOSED MEAN VALUE -> {:.2f}".format(ohlc[5]/ohlc[4]))
+        bot.reply_to(message, "------------{}".format(ohlc[6]))
+        bot.reply_to(message, "-------------------------------------")
 
-    except Exception as ww:
-      print(ww)
-      pass
+      except Exception as ww:
+        print(ww)
+        pass
   else:
   	bot.reply_to(message, "Enter interval (Eg.  SBIN.NS 1d)")
 
