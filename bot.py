@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # import _thread
 # import time
 
@@ -35,7 +36,7 @@ import requests
 from stocks import Stockbot
 # from telegram_bot_calendar import DetailedTelegramCalendar, LSTEP
 
-# from telegram.error import (TelegramError, Unauthorized, BadRequest, TimedOut, ChatMigrated, NetworkError)
+from telegram.error import (TelegramError, Unauthorized, BadRequest, TimedOut, ChatMigrated, NetworkError)
 
 setup_name = "default"
 
@@ -61,24 +62,15 @@ def get_interval(message,msg):
       bot.reply_to(message, "Interval {}".format(text))
       return text
 
-
-# @bot.callback_query_handler(func=DetailedTelegramCalendar.func())
-# def cal(messag):
-#     result, key, step = DetailedTelegramCalendar().process(messag.data)
-#     if not result and key:
-#         bot.edit_message_text(f"Select {LSTEP[step]}",messag.message.chat.id,messag.message.message_id,reply_markup=key)
-#     elif result:
-#         bot.edit_message_text(f"You selected {result}",messag.message.chat.id,messag.message.message_id)
-
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
-  bot.reply_to(message, "Welcome to patialabot 😇 \nA personal stock 🤖 BOT")
+    bot.reply_to(message, "Welcome to patialabot 😇 \n Maje Karo  🤖 BOT naal")
 
 
 @bot.message_handler(commands=['restart'])
 def restart(message):
-    os.system('python "C:/Users/angel/Desktop/stocks.py"')
-    bot.reply_to(message, "Server restarted.")
+    os.system('python "/root/stocks_analyser/stocks.py"')
+    bot.reply_to(message, "Mubaarka, Server dobara chal peya.")
 
 
 @bot.message_handler(commands=['search'])
@@ -88,7 +80,7 @@ def search(message):
       bot.reply_to(message, res.json()['ResultSet']['Result'][0]['symbol'])
     except Exception as ee:
       print(ee)
-      bot.reply_to(message, "Enter valid company name after /search ")
+      bot.reply_to(message, "Company da naam is tarah likho /search apple")
       pass
 
 @bot.message_handler(commands=['setup_default'])
@@ -106,7 +98,7 @@ def send_welcome(message):
   bot.reply_to(message, "1. To use this bot, send stock name like this '@SBI.NS 1d' or '@SBIN.NS 1m' or '@SBI.NS 1mo' etc.\n2. search - Search stocks symbol (/search apple) \n3. restart - In case of failure (/restart) \n4. setup - Two setups - Default (for latest date) and Date \n5. help - How to use bot? (/help)")
 
 
-@bot.message_handler(func=lambda msg: msg.text is not None and ("@" in msg.text or "#" in msg.text))
+@bot.message_handler(func=lambda msg: msg.text is not None and "@" in msg.text)
 def at_answer(message):
   global setup_name
   ohlc = []
@@ -155,10 +147,10 @@ def at_answer(message):
 
 	      except Exception as ww:
 	        print(ww)
-	        bot.reply_to(message, "Error: Date format may be wrong")
+	        bot.reply_to(message, "Error: Stock name / Date check kro / varna Default setup use kro")
 	        pass
   else:
-  	bot.reply_to(message, "Error: Synmbol candles date month (Eg.  SBIN.NS 1d 8 10)")
+  	bot.reply_to(message, "Format: Symbol candles date month (Eg.  SBIN.NS 1d 8 10)")
 
 while True:
   try:
