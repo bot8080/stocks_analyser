@@ -26,27 +26,26 @@
 # print("DONE")
 
 # while 1:
-# 	pass
+#   pass
 
 import telebot
 import time
-import stocks
 import os
 import requests
 from stocks import Stockbot
-# from telegram_bot_calendar import DetailedTelegramCalendar, LSTEP
-
 from telegram.error import (TelegramError, Unauthorized, BadRequest, TimedOut, ChatMigrated, NetworkError)
 
 setup_name = "default"
 
 try:
-	bot_token = "1397494341:AAHlbj8WVMUBr9MxD8eGhBGq2OKC1VE1qGY"
+  bot_token = "1397494341:AAHlbj8WVMUBr9MxD8eGhBGq2OKC1VE1qGY"
+  # bot_token = "1148871399:AAFmcwV01Pdkr4oA9QlygkGL8x2BBQGCbWs"
 
-	bot = telebot.TeleBot(token=bot_token)
+
+  bot = telebot.TeleBot(token=bot_token)
 
 except Exception as pp:
-	print(pp)
+  print(pp)
 
 print("BOT STARTED")
 
@@ -69,7 +68,7 @@ def send_welcome(message):
 
 @bot.message_handler(commands=['restart'])
 def restart(message):
-    os.system('python "/root/stocks_analyser/stocks.py"')
+    os.system('python "C:/Users/abhik/Desktop/stocks/stocks_analyser/stocks.py"')
     bot.reply_to(message, "Mubaarka, Server dobara chal peya.")
 
 
@@ -92,6 +91,11 @@ def default(message):
 def date(message):
     global setup_name
     setup_name = "date"
+
+@bot.message_handler(commands=['setup_signal'])
+def default(message):
+    global setup_name
+    setup_name = "signal"
 
 @bot.message_handler(commands=['help'])
 def send_welcome(message):
@@ -120,12 +124,9 @@ def at_answer(message):
         ohlc = obj.main("default")
         pass
 
-      if setup_name == "date":
+      if setup_name == "date" or setup_name == "signal":
         date = input_value[2]
         month = input_value[3]
-
-        # calendar, step = DetailedTelegramCalendar().build()
-        # bot.send_message(message.chat.id,f"Select {LSTEP[step]}",reply_markup=calendar)
         
         ohlc = obj.main("date",date,month)
 
@@ -133,24 +134,30 @@ def at_answer(message):
       print(e)
       pass
 
-    # if flag == "True":
     if str(type(ohlc)) == "<class 'str'>":
-	    bot.reply_to(message, ohlc)
-    else:
-	      # ohlc.append(min_OPEN, max_HIGH, min_LOW, close, candles, sum_candles)
-	      try:
-	        bot.reply_to(message, "OPEN      -> {:.2f}\nHIGH      -> {:.2f}\nLOW       -> {:.2f}\nCLOSE     -> {:.2f}\nTOTAL CANDLES  -> {}".format(ohlc[0], ohlc[1], ohlc[2], ohlc[3], ohlc[4]))
-	        bot.reply_to(message, "\nCLOSED MEAN VALUE -> {:.2f}".format(ohlc[5]/ohlc[4]))
-	        bot.reply_to(message, "------------{}".format(ohlc[6]))
-	        bot.reply_to(message, "-------------------------------------")
-	        bot.reply_to(message, setup_name + ": setup")
+      # Means returning error msg
+      bot.reply_to(message, ohlc)
+      # ohlc.append(min_OPEN, max_HIGH, min_LOW, close, candles, sum_candles, table) 
+    elif setup_name=="signal":
+      if ohlc[0] == ohlc[1]:
+        bot.reply_to(message, "SALE "+stock_name)
+      if ohlc[2] == ohlc[3]:
+        bot.reply_to(message, "BUY "+stock_name)
 
-	      except Exception as ww:
-	        print(ww)
-	        bot.reply_to(message, "Error: Stock name / Date check kro / varna Default setup use kro")
-	        pass
+    else:
+      try:
+        bot.reply_to(message, "OPEN      -> {:.2f}\nHIGH      -> {:.2f}\nLOW       -> {:.2f}\nCLOSE     -> {:.2f}\nTOTAL CANDLES  -> {}".format(ohlc[0], ohlc[1], ohlc[2], ohlc[3], ohlc[4]))
+        bot.reply_to(message, "\nCLOSED MEAN VALUE -> {:.2f}".format(ohlc[5]/ohlc[4]))
+        bot.reply_to(message, "------------{}".format(ohlc[6]))
+        bot.reply_to(message, "-------------------------------------")
+        bot.reply_to(message, setup_name + ": setup")
+
+      except Exception as ww:
+        print(ww)
+        bot.reply_to(message, "Error: Stock name / Date check kro / varna Default setup use kro")
+        pass
   else:
-  	bot.reply_to(message, "Format: Symbol candles date month (Eg.  SBIN.NS 1d 8 10)")
+    bot.reply_to(message, "Format: Symbol candles date month (Eg.  SBIN.NS 1d 8 10)")
 
 while True:
   try:
