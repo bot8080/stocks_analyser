@@ -38,8 +38,8 @@ from telegram.error import (TelegramError, Unauthorized, BadRequest, TimedOut, C
 setup_name = "default"
 
 try:
-  # bot_token = "#"
-  bot_token = "#"
+  bot_token = "1397494341:AAHlbj8WVMUBr9MxD8eGhBGq2OKC1VE1qGY"
+  # bot_token = "1148871399:AAFmcwV01Pdkr4oA9QlygkGL8x2BBQGCbWs"
 
 
   bot = telebot.TeleBot(token=bot_token)
