@@ -38,13 +38,14 @@ from telegram.error import (TelegramError, Unauthorized, BadRequest, TimedOut, C
 setup_name = "default"
 
 try:
-  bot_token = "#"
   # bot_token = "#"
+  bot_token = "#"
 
 
   bot = telebot.TeleBot(token=bot_token)
 
 except Exception as pp:
+  print("Error block :global 1")
   print(pp)
 
 print("BOT STARTED")
@@ -92,10 +93,14 @@ def date(message):
     global setup_name
     setup_name = "date"
 
-@bot.message_handler(commands=['setup_signal'])
-def default(message):
-    global setup_name
-    setup_name = "signal"
+
+
+
+
+
+
+
+
 
 @bot.message_handler(commands=['help'])
 def send_welcome(message):
@@ -107,14 +112,13 @@ def at_answer(message):
   global setup_name
   ohlc = []
   ohlc.clear()
-  flag = False
-  error = False
 
   input_value = message.text.split(" ")
   # Eg. input_value = ['stock name', 'interval', 'date']
   
   if len(input_value)>1 and len(input_value)<5:
     try:
+      print("###########################################################")
       stock_name = get_stock_name(message,input_value[0]) 
       obj = Stockbot(stock_name,input_value[1])
       
@@ -124,13 +128,14 @@ def at_answer(message):
         ohlc = obj.main("default")
         pass
 
-      if setup_name == "date" or setup_name == "signal":
+      if setup_name == "date":
         date = input_value[2]
         month = input_value[3]
         
         ohlc = obj.main("date",date,month)
 
     except Exception as e:
+      print("Error block :at_answer 2")
       print(e)
       pass
 
@@ -138,11 +143,6 @@ def at_answer(message):
       # Means returning error msg
       bot.reply_to(message, ohlc)
       # ohlc.append(min_OPEN, max_HIGH, min_LOW, close, candles, sum_candles, table) 
-    elif setup_name=="signal":
-      if ohlc[0] == ohlc[1]:
-        bot.reply_to(message, "SALE "+stock_name)
-      if ohlc[2] == ohlc[3]:
-        bot.reply_to(message, "BUY "+stock_name)
 
     else:
       try:
@@ -153,15 +153,19 @@ def at_answer(message):
         bot.reply_to(message, setup_name + ": setup")
 
       except Exception as ww:
+        print("Error block :at_answer 3")
         print(ww)
         bot.reply_to(message, "Error: Stock name / Date check kro / varna Default setup use kro")
         pass
   else:
-    bot.reply_to(message, "Format: Symbol candles date month (Eg.  SBIN.NS 1d 8 10)")
+    bot.reply_to(message, "Format: Symbol candles date month (Eg.  @SBIN.NS 1d 8 10)")
 
 while True:
   try:
     bot.polling()
-  except Exception:
-    time.sleep(15)
+  except Exception as ee:
+    print("POLLING")
+    print(ee)
+    pass
+    # time.sleep(15)
 

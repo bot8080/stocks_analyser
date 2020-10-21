@@ -4,7 +4,6 @@ import arrow
 import datetime
 import time
 
-
 class Stockbot:
   def __init__(self, stock_name, interval):
     self.ohlc = []
@@ -18,11 +17,6 @@ class Stockbot:
 
     print(self.stock_name,"", self.interval)
 
-
-    # stock_name = input("Enter Stock name: ")
-
-    # self.date_duration = input("Enter Time duration (1d, 5d, 1mo, 3mo, 6mo, 1y, 2y , 3y): ")
-
   def date_range_setup(self):
       # 20/12/2020
       startdate = self.date+"/"+self.month+"/"+"2020"
@@ -31,16 +25,18 @@ class Stockbot:
       startdate = int(time.mktime(datetime.datetime.strptime(startdate,"%d/%m/%Y").timetuple()))
       enddate = int(time.mktime(datetime.datetime.strptime(enddate,"%d/%m/%Y").timetuple())) 
 
-      self.res = requests.get(self.url+str(self.stock_name)+'?&interval='+str(self.interval)+'&includePrePost=true&events=div%2Csplit&period1='+str(startdate)+'&period2='+str(enddate))
-
+      try:
+        self.res = requests.get(self.url+str(self.stock_name)+'?&interval='+str(self.interval)+'&includePrePost=true&events=div%2Csplit&period1='+str(startdate)+'&period2='+str(enddate))
+      except Exception as ee:
+        print("ERROR BLOCK: 222")
+        print(ee)
+        
   def default_setup(self):
       self.date_duration = "1d"
       self.res = requests.get(self.url+str(self.stock_name)+'?&interval='+str(self.interval)+'&includePrePost=true&events=div%2Csplit&range='+str(self.date_duration))
 
 
   def request_data(self):
-      if self.interval =="":
-        self.interval = "1m"
 
       # pd.options.display.max_rows = 2000
 
@@ -58,13 +54,41 @@ class Stockbot:
         dt = datetime.datetime
         dt = pd.Series(map(lambda x: arrow.get(x).to('Asia/Calcutta').datetime.replace(tzinfo=None), body['timestamp']), name='Datetime')
       except Exception as e:
+        print("Error block :request_data 2")
         print(e)
 
-      self.table = pd.DataFrame(body['indicators']['quote'][0], index=dt)
-      dg = pd.DataFrame(body['timestamp'])    
-      self.table = self.table.loc[:, ('open', 'high', 'low', 'close', 'volume')]
-      self.table.dropna(inplace=True)     #removing NaN rows
-      self.table.columns = ['OPEN', 'HIGH','LOW','CLOSE','VOLUME']    #Renaming columns in pandas
+      try:
+        self.table = pd.DataFrame(body['indicators']['quote'][0], index=dt)
+        dg = pd.DataFrame(body['timestamp'])    
+        self.table = self.table.loc[:, ('open', 'high', 'low', 'close', 'volume')]
+        self.table.dropna(inplace=True)     #removing NaN rows
+        self.table.columns = ['OPEN', 'HIGH','LOW','CLOSE','VOLUME']    #Renaming columns in pandas
+      except Exception as e:
+        print("Error block :request_data 3")
+        print(e)
+
+  def get_ohlc(self):
+    self.openn = -99999
+    for open_item in self.table['OPEN']:
+      self.openn = open_item
+      break
+      
+    self.max_HIGH = -99999
+    for item in self.table['HIGH']:
+      if item > self.max_HIGH:
+        self.max_HIGH = item
+
+    self.min_LOW = 999999
+    for item in self.table['LOW']:
+      if item < self.min_LOW:
+        self.min_LOW = item
+
+    self.sum_candles = self.candles= 0
+    self.close = -999999
+    for item in self.table['CLOSE']:
+      self.sum_candles = item + self.sum_candles
+      self.candles = self.candles+1
+      self.close = item
 
 
   def main(self,setupp,d=0,m=0):
@@ -76,39 +100,19 @@ class Stockbot:
 
     if self.setup == "default":
       self.default_setup()
+      self.request_data()
+
     if self.setup == "date":
       self.date_range_setup()
-
-    self.request_data()
+      self.request_data()
 
     if str(type(self.error)) == "<class 'str'>":
       return self.error
     else:
+      self.get_ohlc()
       print(self.table)
-      print("---------------------------------------------------------------------\n\n\n")
-      min_OPEN = -99999
-      for open_item in self.table['OPEN']:
-        min_OPEN = open_item
-        break
-        
-      max_HIGH = -99999
-      for item in self.table['HIGH']:
-        if item > max_HIGH:
-          max_HIGH = item
 
-      min_LOW = 999999
-      for item in self.table['LOW']:
-        if item < min_LOW:
-          min_LOW = item
-
-      sum_candles = candles= 0
-      close = -999999
-      for item in self.table['CLOSE']:
-        sum_candles = item + sum_candles
-        candles = candles+1
-        close = item
-
-      self.ohlc.extend([min_OPEN, max_HIGH, min_LOW, close, candles, sum_candles,self.table])
+      self.ohlc.extend([self.openn, self.max_HIGH, self.min_LOW, self.close, self.candles, self.sum_candles,self.table])
       return self.ohlc
 
 
